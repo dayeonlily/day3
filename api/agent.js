@@ -20,21 +20,41 @@ const systemPrompt = () =>
   "- 답변은 한국어로 간결하게: 날씨 한 줄 요약 → 추천 장소 3~5곳(이름과 한 줄 이유) → 방문 전 공식 안내 확인 권유.\n" +
   "- 제주도와 무관한 요청은 정중히 범위 밖이라고 답한다.";
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const RETRY_DELAYS_MS = [1000, 2500, 5000]; // 과부하(503)·한도(429)일 때만 재시도
 
 // Vercel 이 함수를 강제 종료(일반 텍스트 오류 페이지)하기 전에 우리가 먼저 JSON 오류로 끝낸다.
 const TOTAL_BUDGET_MS = 50000;
+const PER_ATTEMPT_MS = 15000; // 한 모델이 이보다 오래 걸리면 포기하고 다음 모델로 넘어간다.
+const MAX_FALLBACKS = 2;
+const API = "https://generativelanguage.googleapis.com/v1beta";
+const headers = () => ({ "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY });
 
-async function callGemini(contents, deadline) {
-  // 추론(thinking)을 낮춰 응답 속도를 올린다. 모델이 이 설정을 거부하면 아래에서 빼고 다시 요청한다.
-  const request = (lowThinking = true) =>
-    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+// 기본 모델이 과부하일 때 쓸 대체 모델: 이 키로 쓸 수 있는 flash 모델을 직접 조회한다(인스턴스당 1회 캐시).
+let fallbackCache;
+async function fallbackModels() {
+  if (fallbackCache) return fallbackCache;
+  try {
+    const res = await fetch(`${API}/models?pageSize=100`, { headers: headers(), signal: AbortSignal.timeout(5000) });
+    const list = (await res.json()).models || [];
+    fallbackCache = list
+      .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+      .map((m) => m.name.replace(/^models\//, ""))
+      .filter((n) => /^gemini-[a-z0-9.\-]*flash/.test(n) && !/(image|tts|audio|live|embedding|vision|robotics|computer|thinking)/.test(n))
+      .filter((n) => n !== MODEL)
+      .sort().reverse()
+      .slice(0, MAX_FALLBACKS);
+  } catch {
+    fallbackCache = [];
+  }
+  console.log("대체 모델 후보:", fallbackCache.join(", ") || "(없음)");
+  return fallbackCache;
+}
+
+// 모델 하나에 요청한다. 추론(thinking)을 낮춰 속도를 올리고, 모델이 그 설정을 거부하면 빼고 다시 요청한다.
+async function requestModel(model, contents, timeoutMs) {
+  const send = (lowThinking) =>
+    fetch(`${API}/models/${model}:generateContent`, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY,
-      },
+      headers: headers(),
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt() }] },
         contents,
@@ -44,44 +64,56 @@ async function callGemini(contents, deadline) {
           ...(lowThinking ? { thinkingConfig: { thinkingLevel: "low" } } : {}),
         },
       }),
-      signal: AbortSignal.timeout(Math.max(1000, deadline - Date.now())),
+      signal: AbortSignal.timeout(timeoutMs),
     });
-
-  let res;
-  const started = Date.now();
-  try {
-    res = await request();
-    for (const delay of RETRY_DELAYS_MS) {
-      if ((res.status !== 503 && res.status !== 429) || Date.now() + delay > deadline) break;
-      console.log(`Gemini ${res.status} → ${delay}ms 후 재시도`);
-      await sleep(delay);
-      res = await request();
-    }
-    if (res.status === 400) {
-      const msg = (await res.clone().json().catch(() => ({}))).error?.message || "";
-      if (/think/i.test(msg)) {
-        console.log("thinkingConfig 거부됨 → 설정 없이 재요청:", msg.slice(0, 120));
-        res = await request(false);
-      }
-    }
-    console.log(`Gemini ${MODEL} 응답 ${res.status} (${Date.now() - started}ms)`);
-  } catch (e) {
-    console.log(`Gemini 호출 실패: ${e.name} (${Date.now() - started}ms)`);
-    if (e.name === "TimeoutError" || e.name === "AbortError") {
-      throw new Error("Gemini 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요.");
-    }
-    throw e;
+  let res = await send(true);
+  if (res.status === 400) {
+    const msg = (await res.clone().json().catch(() => ({}))).error?.message || "";
+    if (/think/i.test(msg)) res = await send(false);
   }
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || `Gemini API 오류(${res.status})`);
-  const content = data.candidates?.[0]?.content;
-  if (!content) {
-    throw new Error(data.promptFeedback?.blockReason
-      ? `요청이 차단되었습니다(${data.promptFeedback.blockReason}).`
-      : "Gemini 가 빈 응답을 돌려줬습니다.");
-  }
-  return content;
+  return res;
 }
+
+// state.model 은 요청 하나 안에서 한번 성공한 모델을 계속 쓰기 위한 것(대화 중간에 모델이 바뀌지 않게).
+async function callGemini(contents, deadline, state) {
+  const models = state.model ? [state.model] : [MODEL];
+  let lastProblem = "";
+  for (let i = 0; i < models.length; i++) {
+    const remaining = deadline - Date.now();
+    if (remaining < 3000) break;
+    const model = models[i];
+    const started = Date.now();
+    let res;
+    try {
+      res = await requestModel(model, contents, Math.min(PER_ATTEMPT_MS, remaining));
+    } catch (e) {
+      const timedOut = e.name === "TimeoutError" || e.name === "AbortError";
+      console.log(`Gemini ${model} 호출 실패: ${e.name} (${Date.now() - started}ms)`);
+      if (!timedOut) throw e;
+      lastProblem = "응답이 너무 오래 걸립니다";
+      if (!state.model && i === 0) models.push(...(await fallbackModels()));
+      continue;
+    }
+    console.log(`Gemini ${model} 응답 ${res.status} (${Date.now() - started}ms)`);
+    if (res.status === 503 || res.status === 429) {
+      lastProblem = "Gemini 서버가 혼잡합니다";
+      if (!state.model && i === 0) models.push(...(await fallbackModels()));
+      continue;
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || `Gemini API 오류(${res.status})`);
+    const content = data.candidates?.[0]?.content;
+    if (!content) {
+      throw new Error(data.promptFeedback?.blockReason
+        ? `요청이 차단되었습니다(${data.promptFeedback.blockReason}).`
+        : "Gemini 가 빈 응답을 돌려줬습니다.");
+    }
+    state.model = model;
+    return content;
+  }
+  throw new Error(`${lastProblem || "시간이 부족합니다"}. 잠시 후 다시 시도해 주세요.`);
+}
+
 
 // POST /api/agent  { "message": "내일 서쪽에서 갈만한 곳 추천해줘" }
 // → { answer, steps: [{ tool, input, result }] }
@@ -101,9 +133,10 @@ module.exports = async (req, res) => {
   const contents = [{ role: "user", parts: [{ text: message }] }];
   const steps = [];
   const deadline = Date.now() + TOTAL_BUDGET_MS;
+  const state = {};
   try {
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      const reply = await callGemini(contents, deadline);
+      const reply = await callGemini(contents, deadline, state);
       const parts = reply.parts || [];
       // 모델 응답은 그대로(생각 서명 포함) 대화에 되돌려 넣어야 한다.
       contents.push({ role: "model", parts });
