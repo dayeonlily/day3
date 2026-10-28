@@ -1,7 +1,7 @@
 const { toolDefinitions, runTool } = require("./tools");
 
 // 모델은 GEMINI_MODEL 환경변수로 바꿀 수 있다.
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const MAX_TURNS = 6; // 도구 호출 왕복 상한 (무한 루프 방지)
 const MAX_MESSAGE_LENGTH = 300;
 
