@@ -95,7 +95,7 @@ const toolDefinitions = [
       "제주도 관광지 목록에서 지역(동쪽 · 서쪽 · 서귀포 · 제주시)과 실내/야외 여부로 장소를 찾아 최대 8곳을 돌려준다. " +
       "목록 밖 장소는 없다: 이 도구가 돌려준 장소만 추천하고, 결과에 없는 장소는 지어내지 말 것. " +
       "운영시간 · 요금 · 휴무는 담겨 있지 않다.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         area: {
@@ -116,7 +116,7 @@ const toolDefinitions = [
     description:
       "제주 지역(동쪽 · 서쪽 · 서귀포 · 제주시)의 날짜별 날씨 예보(날씨 · 기온 · 강수확률 · 풍속)를 돌려준다. " +
       "오늘부터 7일 이내만 조회 가능. 결과의 outdoor_advice 를 보고 실내/야외 중 무엇을 추천할지 정한다.",
-    input_schema: {
+    parameters: {
       type: "object",
       properties: {
         area: { type: "string", enum: AREAS, description: "날씨를 볼 지역" },
