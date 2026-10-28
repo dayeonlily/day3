@@ -17,10 +17,12 @@ const systemPrompt = () =>
   "- 답변은 한국어로 간결하게: 날씨 한 줄 요약 → 추천 장소 3~5곳(이름과 한 줄 이유) → 방문 전 공식 안내 확인 권유.\n" +
   "- 제주도와 무관한 요청은 정중히 범위 밖이라고 답한다.";
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const RETRY_DELAYS_MS = [1000, 2500, 5000]; // 과부하(503)·한도(429)일 때만 재시도
+
 async function callGemini(contents) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-    {
+  const request = () =>
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -32,8 +34,14 @@ async function callGemini(contents) {
         tools: [{ functionDeclarations: toolDefinitions }],
         generationConfig: { maxOutputTokens: 4096 },
       }),
-    }
-  );
+    });
+
+  let res = await request();
+  for (const delay of RETRY_DELAYS_MS) {
+    if (res.status !== 503 && res.status !== 429) break;
+    await sleep(delay);
+    res = await request();
+  }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message || `Gemini API 오류(${res.status})`);
   const content = data.candidates?.[0]?.content;
