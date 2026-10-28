@@ -27,7 +27,8 @@ const RETRY_DELAYS_MS = [1000, 2500, 5000]; // 과부하(503)·한도(429)일 �
 const TOTAL_BUDGET_MS = 50000;
 
 async function callGemini(contents, deadline) {
-  const request = () =>
+  // 추론(thinking)을 낮춰 응답 속도를 올린다. 모델이 이 설정을 거부하면 아래에서 빼고 다시 요청한다.
+  const request = (lowThinking = true) =>
     fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
       method: "POST",
       headers: {
@@ -38,7 +39,10 @@ async function callGemini(contents, deadline) {
         systemInstruction: { parts: [{ text: systemPrompt() }] },
         contents,
         tools: [{ functionDeclarations: toolDefinitions }],
-        generationConfig: { maxOutputTokens: 4096 },
+        generationConfig: {
+          maxOutputTokens: 4096,
+          ...(lowThinking ? { thinkingConfig: { thinkingLevel: "low" } } : {}),
+        },
       }),
       signal: AbortSignal.timeout(Math.max(1000, deadline - Date.now())),
     });
@@ -53,8 +57,16 @@ async function callGemini(contents, deadline) {
       await sleep(delay);
       res = await request();
     }
+    if (res.status === 400) {
+      const msg = (await res.clone().json().catch(() => ({}))).error?.message || "";
+      if (/think/i.test(msg)) {
+        console.log("thinkingConfig 거부됨 → 설정 없이 재요청:", msg.slice(0, 120));
+        res = await request(false);
+      }
+    }
     console.log(`Gemini ${MODEL} 응답 ${res.status} (${Date.now() - started}ms)`);
   } catch (e) {
+    console.log(`Gemini 호출 실패: ${e.name} (${Date.now() - started}ms)`);
     if (e.name === "TimeoutError" || e.name === "AbortError") {
       throw new Error("Gemini 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요.");
     }
