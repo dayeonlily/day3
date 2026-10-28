@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제주 문화·역사</title>
+<style>
+  :root { --bg:#f5f7fa; --card:#fff; --ink:#1f2a3a; --sub:#5b677a; --line:#e1e6ee; --brand:#2a4a7f; --accent:#e8793a; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161d; --card:#1b212b; --ink:#e8ecf2; --sub:#9aa6b8; --line:#2b3442; --brand:#7ea2e0; --accent:#f09a68; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:'Noto Sans KR','Malgun Gothic',system-ui,sans-serif; line-height:1.55; }
+  header { padding:40px 16px 24px; text-align:center; }
+  header h1 { margin:0 0 6px; font-size:2rem; }
+  header p { margin:0; color:var(--sub); }
+  main { max-width:1100px; margin:0 auto; padding:0 16px 48px; }
+  .tools { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .tools input, .tools select { padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--ink); font:inherit; }
+  .tools input { flex:1 1 220px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .chip { padding:7px 14px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--ink); font:inherit; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .chip.wish[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); }
+  .count { color:var(--sub); font-size:.9rem; margin-bottom:10px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:8px; }
+  .card.sel { border-color:var(--accent); }
+  .top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .tag { font-size:.78rem; padding:2px 10px; border-radius:999px; background:var(--bg); color:var(--brand); border:1px solid var(--line); }
+  .score { font-weight:700; color:var(--accent); }
+  .card h3 { margin:0; font-size:1.1rem; }
+  .card p { margin:0; color:var(--sub); font-size:.92rem; flex:1; }
+  .card a { font-size:.85rem; color:var(--brand); }
+  .empty { text-align:center; color:var(--sub); padding:40px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏺 제주 문화·역사</h1>
+  <p id="sub">데이터를 불러오는 중…</p>
+</header>
+<main>
+  <div class="tools">
+    <input id="q" type="search" placeholder="이름으로 검색" aria-label="이름으로 검색">
+    <select id="sort" aria-label="정렬">
+      <option value="score">점수 높은 순</option>
+      <option value="name">이름 순</option>
+    </select>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+  let items = [];
+  let cat = '전체';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function drawChips() {
+    const cats = ['전체', ...new Set(items.map(i => i.category))];
+    const wish = items.filter(i => i.selected).length;
+    $('chips').innerHTML = cats.map(c =>
+      `<button class="chip" data-cat="${esc(c)}" aria-pressed="${c === cat}">${esc(c)}</button>`).join('') +
+      `<button class="chip wish" data-cat="__wish" aria-pressed="${cat === '__wish'}">⭐ 가 보고 싶은 곳 (${wish})</button>`;
+  }
+
+  function render() {
+    const q = $('q').value.trim().toLowerCase();
+    let list = items.filter(i =>
+      (cat === '전체' || (cat === '__wish' ? i.selected : i.category === cat)) &&
+      i.name.toLowerCase().includes(q));
+    list.sort($('sort').value === 'name'
+      ? (a, b) => a.name.localeCompare(b.name, 'ko')
+      : (a, b) => b.score - a.score);
+    $('count').textContent = `${list.length}개`;
+    $('grid').innerHTML = list.length ? list.map(i => `
+      <article class="card${i.selected ? ' sel' : ''}">
+        <div class="top"><span class="tag">${esc(i.category)}</span><span class="score">★ ${i.score}</span></div>
+        <h3>${i.selected ? '⭐ ' : ''}${esc(i.name)}</h3>
+        <p>${esc(i.description)}</p>
+        ${/^https?:\/\//.test(i.source) ? `<a href="${esc(i.source)}" target="_blank" rel="noopener">출처</a>` : ''}
+      </article>`).join('') : '<div class="empty">검색 결과가 없습니다.</div>';
+  }
+
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    cat = b.dataset.cat;
+    drawChips(); render();
+  });
+  $('q').addEventListener('input', render);
+  $('sort').addEventListener('change', render);
+
+  fetch('jeju_culture.json')
+    .then(r => r.json())
+    .then(d => {
+      items = d.items;
+      $('sub').textContent = `${d.region} · ${d.topic} · 총 ${items.length}개`;
+      drawChips(); render();
+    })
+    .catch(() => { $('sub').textContent = '데이터를 불러오지 못했습니다. 로컬 서버로 열어 주세요.'; });
+</script>
+</body>
+</html>
