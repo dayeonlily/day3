@@ -20,7 +20,10 @@ const systemPrompt = () =>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const RETRY_DELAYS_MS = [1000, 2500, 5000]; // 과부하(503)·한도(429)일 때만 재시도
 
-async function callGemini(contents) {
+// Vercel 이 함수를 강제 종료(일반 텍스트 오류 페이지)하기 전에 우리가 먼저 JSON 오류로 끝낸다.
+const TOTAL_BUDGET_MS = 50000;
+
+async function callGemini(contents, deadline) {
   const request = () =>
     fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
       method: "POST",
@@ -34,13 +37,22 @@ async function callGemini(contents) {
         tools: [{ functionDeclarations: toolDefinitions }],
         generationConfig: { maxOutputTokens: 4096 },
       }),
+      signal: AbortSignal.timeout(Math.max(1000, deadline - Date.now())),
     });
 
-  let res = await request();
-  for (const delay of RETRY_DELAYS_MS) {
-    if (res.status !== 503 && res.status !== 429) break;
-    await sleep(delay);
+  let res;
+  try {
     res = await request();
+    for (const delay of RETRY_DELAYS_MS) {
+      if ((res.status !== 503 && res.status !== 429) || Date.now() + delay > deadline) break;
+      await sleep(delay);
+      res = await request();
+    }
+  } catch (e) {
+    if (e.name === "TimeoutError" || e.name === "AbortError") {
+      throw new Error("Gemini 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요.");
+    }
+    throw e;
   }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message || `Gemini API 오류(${res.status})`);
@@ -70,9 +82,10 @@ module.exports = async (req, res) => {
 
   const contents = [{ role: "user", parts: [{ text: message }] }];
   const steps = [];
+  const deadline = Date.now() + TOTAL_BUDGET_MS;
   try {
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      const reply = await callGemini(contents);
+      const reply = await callGemini(contents, deadline);
       const parts = reply.parts || [];
       // 모델 응답은 그대로(생각 서명 포함) 대화에 되돌려 넣어야 한다.
       contents.push({ role: "model", parts });
