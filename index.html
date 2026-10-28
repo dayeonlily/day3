@@ -3,163 +3,211 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ISS 실시간 추적</title>
+<title>제주 관광지 AI 추천 지도</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-  :root { --fg:#e8f0ff; --muted:#8fa3c7; --accent:#ffd34d; --panel:rgba(8,14,30,.72); --line:rgba(255,255,255,.14); }
+  :root { --bg:#fff; --fg:#1a1a1a; --muted:#666; --line:#ddd; --accent:#0a7c66; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16181a; --fg:#eee; --muted:#aaa; --line:#333; --accent:#3fc7a8; }
+  }
   * { box-sizing: border-box; }
-  html, body { margin:0; height:100%; background:#000; color:var(--fg); font-family:system-ui,"Malgun Gothic",sans-serif; overflow:hidden; }
-  #globe { position:fixed; inset:0; }
-  .panel { position:fixed; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; backdrop-filter:blur(8px); }
-  #info { top:16px; left:16px; width:280px; }
-  h1 { font-size:16px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
-  .dot { width:9px; height:9px; border-radius:50%; background:#3ddc84; box-shadow:0 0 8px #3ddc84; animation:pulse 1.4s infinite; }
-  .dot.err { background:#ff5a5a; box-shadow:0 0 8px #ff5a5a; animation:none; }
-  @keyframes pulse { 50% { opacity:.3; } }
-  .country { font-size:22px; font-weight:700; color:var(--accent); margin:2px 0 10px; min-height:30px; }
-  dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px; font-variant-numeric:tabular-nums; }
-  dt { color:var(--muted); } dd { margin:0; text-align:right; }
-  #controls { bottom:16px; left:16px; display:flex; gap:8px; }
-  button { font:inherit; font-size:13px; padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--fg); cursor:pointer; }
-  button[aria-pressed="true"] { background:var(--accent); color:#111; border-color:var(--accent); }
-  #credit { position:fixed; right:12px; bottom:8px; font-size:11px; color:var(--muted); }
-  @media (max-width:600px) { #info { width:calc(100% - 32px); } #controls { bottom:36px; } }
+  body { margin:0; font-family:system-ui,"Malgun Gothic",sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:12px 16px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; border-bottom:1px solid var(--line); }
+  h1 { font-size:18px; margin:0 8px 0 0; }
+  select, button { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+  button { background:var(--accent); color:#fff; border-color:var(--accent); cursor:pointer; }
+  button:disabled { opacity:.6; cursor:wait; }
+  body { display:flex; flex-direction:column; height:100vh; }
+  #ask { padding:10px 16px; display:flex; gap:8px; border-bottom:1px solid var(--line); }
+  #ask input { flex:1; font:inherit; padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+  main { display:grid; grid-template-columns:340px 1fr; flex:1; min-height:0; }
+  aside { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); }
+  #answer { display:none; max-height:55%; overflow:auto; padding:12px 16px; border-bottom:1px solid var(--line); font-size:14px; line-height:1.55; }
+  #answer .steps { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  #answer .chip { font-size:12px; padding:2px 8px; border-radius:99px; border:1px solid var(--accent); color:var(--accent); }
+  #answer .text { white-space:pre-wrap; }
+  #list { flex:1; overflow:auto; padding:8px 0; margin:0; list-style:none; }
+  #list li { padding:8px 16px; border-bottom:1px solid var(--line); cursor:pointer; }
+  #list li:hover { background:rgba(127,127,127,.12); }
+  #list small { display:block; color:var(--muted); }
+  #status { padding:8px 16px; color:var(--muted); font-size:14px; }
+  #map { height:100%; }
+  @media (max-width:700px) {
+    body { height:auto; }
+    main { grid-template-columns:1fr; flex:none; }
+    aside { border-right:0; }
+    #answer { max-height:none; }
+    #list { overflow:visible; }
+    #map { order:-1; height:320px; }
+  }
 </style>
 </head>
 <body>
-<div id="globe"></div>
+<header>
+  <h1>제주 관광지 지도</h1>
+  <select id="area" aria-label="지역">
+    <option>동쪽</option><option>서쪽</option><option>서귀포</option><option>제주시</option>
+  </select>
+  <select id="indoor" aria-label="실내 여부">
+    <option value="">실내/야외 전체</option>
+    <option value="true">실내</option>
+    <option value="false">야외</option>
+  </select>
+  <button id="go">찾기</button>
+</header>
+<form id="ask">
+  <input id="q" maxlength="300" placeholder="예) 내일 서쪽에서 가족이랑 갈만한 곳 추천해줘" aria-label="AI 추천 질문">
+  <button id="askGo">AI 추천</button>
+</form>
+<main>
+  <aside>
+    <div id="answer" aria-live="polite"></div>
+    <div id="status">지역을 고르고 찾기를 누르거나, 위에 질문을 입력하세요.</div>
+    <ul id="list"></ul>
+  </aside>
+  <div id="map"></div>
+</main>
 
-<div class="panel" id="info">
-  <h1><span class="dot" id="dot"></span>ISS 실시간 위치</h1>
-  <div class="country" id="country">위치 확인 중…</div>
-  <dl>
-    <dt>위도</dt><dd id="lat">–</dd>
-    <dt>경도</dt><dd id="lon">–</dd>
-    <dt>고도</dt><dd id="alt">–</dd>
-    <dt>속도</dt><dd id="vel">–</dd>
-    <dt>일조</dt><dd id="vis">–</dd>
-    <dt>현지 시간대</dt><dd id="tz">–</dd>
-  </dl>
-</div>
-
-<div class="panel" id="controls">
-  <button id="follow" aria-pressed="true">ISS 따라가기</button>
-  <button id="orbit" aria-pressed="true">궤도 표시</button>
-</div>
-<div id="credit">데이터: wheretheiss.at · 키 없이 동작</div>
-
-<script src="https://unpkg.com/globe.gl@2.33.1/dist/globe.gl.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const API = 'https://api.wheretheiss.at/v1';
-const ID = 25544;
-const $ = id => document.getElementById(id);
-const regionNames = new Intl.DisplayNames(['ko'], { type: 'region' });
+// 원본 데이터에 좌표가 없어서, 장소 이름을 OpenStreetMap(Nominatim)으로 검색해 위치를 얻는다.
+// 못 찾으면 지역 중심에 "대략 위치"로 표시한다.
+const AREA_CENTER = {
+  "동쪽": [33.45, 126.85], "서쪽": [33.37, 126.30],
+  "서귀포": [33.25, 126.56], "제주시": [33.50, 126.53],
+};
+const JEJU_VIEWBOX = "126.10,33.60,127.00,33.10"; // left,top,right,bottom
 
-let trail = [];          // 실제 지나온 위치
-let pastOrbit = [], futureOrbit = [];
-let current = null;
-let follow = true, showOrbit = true;
+const map = L.map("map").setView([33.38, 126.55], 10);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18, attribution: "&copy; OpenStreetMap contributors",
+}).addTo(map);
+const layer = L.layerGroup().addTo(map);
 
-const globe = Globe()($('globe'))
-  .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
-  .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
-  .backgroundImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png')
-  .atmosphereColor('#6aa8ff').atmosphereAltitude(0.2)
-  .pathPointLat(p => p[0]).pathPointLng(p => p[1]).pathPointAlt(0.06)
-  .pathColor(p => p.color).pathStroke(1.4).pathTransitionDuration(0)
-  .ringLat(d => d.lat).ringLng(d => d.lng)
-  .ringColor(() => t => `rgba(255,211,77,${1 - t})`)
-  .ringMaxRadius(6).ringPropagationSpeed(3).ringRepeatPeriod(1200)
-  .htmlElementsData([]).htmlLat(d => d.lat).htmlLng(d => d.lng).htmlAltitude(0.06)
-  .htmlElement(() => {
-    const el = document.createElement('div');
-    el.textContent = '🛰️';
-    el.style.cssText = 'font-size:30px;transform:translate(-50%,-50%);filter:drop-shadow(0 0 8px #ffd34d);pointer-events:none';
-    return el;
-  });
-globe.controls().autoRotate = false;
-globe.pointOfView({ lat: 20, lng: 0, altitude: 2.4 });
-addEventListener('resize', () => globe.width(innerWidth).height(innerHeight));
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// 날짜변경선을 넘는 구간은 선이 지구를 가로지르지 않도록 쪼갠다
-function toPaths(points, color) {
-  const paths = []; let cur = [];
-  for (const p of points) {
-    if (cur.length && Math.abs(p[1] - cur[cur.length - 1][1]) > 180) { paths.push({ pts: cur, color }); cur = []; }
-    cur.push(p);
-  }
-  if (cur.length) paths.push({ pts: cur, color });
-  return paths;
+function cached(name) {
+  try { return JSON.parse(localStorage.getItem("geo:" + name)); } catch { return undefined; }
 }
-function drawPaths() {
-  const paths = showOrbit
-    ? [...toPaths(pastOrbit.concat(trail), 'rgba(255,211,77,.95)'), ...toPaths(futureOrbit, 'rgba(120,200,255,.55)')]
-    : [];
-  globe.pathsData(paths).pathPoints('pts');
+function store(name, value) {
+  try { localStorage.setItem("geo:" + name, JSON.stringify(value)); } catch {}
 }
 
-async function loadOrbit() {
-  const now = Math.floor(Date.now() / 1000), step = 300;
-  const ts = (from, n) => Array.from({ length: n }, (_, i) => from + i * step);
-  const get = async arr => {
-    const r = await fetch(`${API}/satellites/${ID}/positions?timestamps=${arr.join(',')}`);
-    return (await r.json()).map(p => [p.latitude, p.longitude]);
-  };
+// 반환: [lat, lng] 또는 null. Nominatim 사용 정책상 요청 간격을 1초 이상 둔다.
+async function geocode(name) {
+  const hit = cached(name);
+  if (hit !== undefined && hit !== null) return hit;
   try {
-    const [past, f1, f2, f3] = await Promise.all([
-      get(ts(now - 10 * step, 10)), get(ts(now, 10)), get(ts(now + 10 * step, 10)), get(ts(now + 20 * step, 10)),
-    ]);
-    pastOrbit = past; futureOrbit = [...f1, ...f2, ...f3];
-    drawPaths();
-  } catch (e) { console.warn('궤도 로드 실패', e); }
-}
-
-let lastGeo = 0;
-async function updateCountry(lat, lng) {
-  if (Date.now() - lastGeo < 8000) return;
-  lastGeo = Date.now();
-  try {
-    const r = await fetch(`${API}/coordinates/${lat},${lng}`);
-    const c = await r.json();
-    $('tz').textContent = c.timezone_id && c.timezone_id !== '?' ? c.timezone_id : '–';
-    if (c.country_code && c.country_code !== '??') {
-      const flag = [...c.country_code].map(ch => String.fromCodePoint(127397 + ch.charCodeAt(0))).join('');
-      $('country').textContent = `${flag} ${regionNames.of(c.country_code)}`;
-    } else {
-      $('country').textContent = '🌊 바다 위';
-    }
-  } catch { /* 다음 주기에 재시도 */ }
-}
-
-async function tick() {
-  try {
-    const r = await fetch(`${API}/satellites/${ID}`);
-    const d = await r.json();
-    current = { lat: d.latitude, lng: d.longitude };
-    $('dot').classList.remove('err');
-    $('lat').textContent = d.latitude.toFixed(3) + '°';
-    $('lon').textContent = d.longitude.toFixed(3) + '°';
-    $('alt').textContent = d.altitude.toFixed(1) + ' km';
-    $('vel').textContent = Math.round(d.velocity).toLocaleString() + ' km/h';
-    $('vis').textContent = d.visibility === 'daylight' ? '☀️ 낮' : d.visibility === 'eclipsed' ? '🌙 밤' : '🌅 박명';
-    trail.push([d.latitude, d.longitude]);
-    if (trail.length > 400) trail.shift();
-    globe.htmlElementsData([current]).ringsData([current]);
-    drawPaths();
-    if (follow) globe.pointOfView({ lat: d.latitude, lng: d.longitude }, 1500);
-    updateCountry(d.latitude, d.longitude);
+    const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&bounded=1"
+      + "&accept-language=ko&viewbox=" + JEJU_VIEWBOX + "&q=" + encodeURIComponent(name);
+    const rows = await (await fetch(url)).json();
+    const pos = rows.length ? [Number(rows[0].lat), Number(rows[0].lon)] : null;
+    if (pos) store(name, pos);
+    await sleep(1100);
+    return pos;
   } catch {
-    $('dot').classList.add('err');
+    return null;
   }
 }
 
-$('follow').onclick = e => { follow = !follow; e.target.setAttribute('aria-pressed', follow); };
-$('orbit').onclick = e => { showOrbit = !showOrbit; e.target.setAttribute('aria-pressed', showOrbit); drawPaths(); };
-globe.controls().addEventListener('start', () => { follow = false; $('follow').setAttribute('aria-pressed', false); });
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
-loadOrbit();
-setInterval(loadOrbit, 10 * 60 * 1000);
-tick();
-setInterval(tick, 2000);
+// 장소 목록을 지도와 목록에 표시한다. fallbackArea 는 좌표를 못 찾았을 때 쓸 지역 중심.
+async function showSpots(spots, fallbackArea, onProgress) {
+  $("list").innerHTML = "";
+  layer.clearLayers();
+  const bounds = [];
+  for (const [i, s] of spots.entries()) {
+    const found = await geocode(s.name);
+    const center = AREA_CENTER[fallbackArea] || AREA_CENTER[s.region.split("(")[0]] || AREA_CENTER["제주시"];
+    const pos = found || center.map((v, k) => v + (i % 3 - 1) * 0.01 * (k ? 1 : -1));
+    const kind = s.indoor ? "실내" : "야외";
+    const marker = L.marker(pos).addTo(layer).bindPopup(
+      `<b>${esc(s.name)}</b><br>${esc(s.region)} · ${kind}<br>${esc(s.desc)}`
+      + (found ? "" : "<br><i>대략 위치(정확한 좌표 없음)</i>"));
+    bounds.push(pos);
+
+    const li = document.createElement("li");
+    li.innerHTML = `${esc(s.name)}<small>${esc(s.region)} · ${kind} · ${esc(s.desc)}${found ? "" : " · 대략 위치"}</small>`;
+    li.onclick = () => { map.setView(pos, 13); marker.openPopup(); };
+    $("list").appendChild(li);
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+    if (onProgress) onProgress(i + 1);
+  }
+}
+
+async function search() {
+  const area = $("area").value, indoor = $("indoor").value;
+  $("go").disabled = true;
+  $("answer").style.display = "none";
+  $("list").innerHTML = "";
+  layer.clearLayers();
+  $("status").textContent = "장소 찾는 중…";
+  try {
+    const q = new URLSearchParams({ area });
+    if (indoor) q.set("indoor", indoor);
+    const res = await fetch("/api/spots?" + q);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "요청 실패");
+
+    $("status").textContent = `전체 ${data.total}곳 중 ${data.spots.length}곳 표시 (위치 찾는 중…)`;
+    await showSpots(data.spots, area);
+    $("status").textContent = `전체 ${data.total}곳 중 ${data.spots.length}곳 표시`;
+  } catch (e) {
+    $("status").textContent = "오류: " + e.message;
+  } finally {
+    $("go").disabled = false;
+  }
+}
+$("go").addEventListener("click", search);
+
+// ---- AI 추천: 서버의 에이전트가 get_weather · find_spots 를 스스로 골라 호출한다 ----
+const TOOL_LABEL = {
+  get_weather: (i) => `🌤 날씨 확인 · ${i.area}${i.date ? " " + i.date : ""}`,
+  find_spots: (i) => `📍 장소 검색 · ${i.area}${i.indoor === undefined ? "" : i.indoor ? " · 실내" : " · 야외"}`,
+};
+
+async function ask(e) {
+  e.preventDefault();
+  const message = $("q").value.trim();
+  if (!message) return;
+  $("askGo").disabled = true;
+  const box = $("answer");
+  box.style.display = "block";
+  box.innerHTML = '<div class="text">AI가 날씨와 장소를 확인하는 중…</div>';
+  $("list").innerHTML = "";
+  layer.clearLayers();
+  $("status").textContent = "";
+  try {
+    const res = await fetch("/api/agent", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "요청 실패");
+
+    const chips = data.steps.map((s) => `<span class="chip">${esc((TOOL_LABEL[s.tool] || (() => s.tool))(s.input))}</span>`).join("");
+    box.innerHTML = `<div class="steps">${chips}</div><div class="text">${esc(data.answer)}</div>`;
+
+    // 답변에 언급된 장소만 지도에 올린다(없으면 검색된 전체).
+    const found = data.steps.filter((s) => s.tool === "find_spots" && s.result.spots).flatMap((s) => s.result.spots);
+    const unique = [...new Map(found.map((s) => [s.name, s])).values()];
+    const mentioned = unique.filter((s) => data.answer.includes(s.name));
+    const spots = mentioned.length ? mentioned : unique;
+    if (spots.length) {
+      $("status").textContent = `추천 장소 ${spots.length}곳 (위치 찾는 중…)`;
+      await showSpots(spots, null);
+      $("status").textContent = `추천 장소 ${spots.length}곳 표시`;
+    }
+  } catch (err) {
+    box.innerHTML = `<div class="text">오류: ${esc(err.message)}</div>`;
+  } finally {
+    $("askGo").disabled = false;
+  }
+}
+$("ask").addEventListener("submit", ask);
 </script>
 </body>
 </html>
