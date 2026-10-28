@@ -163,9 +163,9 @@ async function search() {
 }
 $("go").addEventListener("click", search);
 
-// ---- AI 추천: 서버의 에이전트가 get_weather · find_spots 를 스스로 골라 호출한다 ----
+// ---- AI 추천: 서버의 에이전트가 open_meteo · find_spots 를 스스로 골라 호출한다 ----
 const TOOL_LABEL = {
-  get_weather: (i) => `🌤 날씨 확인 · ${i.area}${i.date ? " " + i.date : ""}`,
+  open_meteo: (i) => `🌤 날씨 확인 · ${i.area}${i.date ? " " + i.date : ""}`,
   find_spots: (i) => `📍 장소 검색 · ${i.area}${i.indoor === undefined ? "" : i.indoor ? " · 실내" : " · 야외"}`,
 };
 

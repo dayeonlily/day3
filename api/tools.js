@@ -50,7 +50,7 @@ function weatherText(code) {
 const isWetCode = (code) => (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
 
 // Open-Meteo 는 API 키가 필요 없다. 오늘부터 7일 예보.
-async function getWeather({ area, date } = {}) {
+async function openMeteo({ area, date } = {}) {
   if (!AREAS.includes(area)) {
     return { error: `area 는 ${AREAS.join(" · ")} 중 하나여야 합니다.` };
   }
@@ -112,7 +112,7 @@ const toolDefinitions = [
     },
   },
   {
-    name: "get_weather",
+    name: "open_meteo",
     description:
       "제주 지역(동쪽 · 서쪽 · 서귀포 · 제주시)의 날짜별 날씨 예보(날씨 · 기온 · 강수확률 · 풍속)를 돌려준다. " +
       "오늘부터 7일 이내만 조회 가능. 결과의 outdoor_advice 를 보고 실내/야외 중 무엇을 추천할지 정한다.",
@@ -127,7 +127,7 @@ const toolDefinitions = [
   },
 ];
 
-const handlers = { find_spots: findSpots, get_weather: getWeather };
+const handlers = { find_spots: findSpots, open_meteo: openMeteo };
 
 async function runTool(name, input) {
   const handler = handlers[name];
@@ -135,4 +135,4 @@ async function runTool(name, input) {
   return handler(input || {});
 }
 
-module.exports = { toolDefinitions, runTool, findSpots, getWeather };
+module.exports = { toolDefinitions, runTool, findSpots, openMeteo };
