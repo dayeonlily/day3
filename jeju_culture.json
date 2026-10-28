@@ -5,6 +5,7 @@
     {
       "name": "제주 해녀 문화",
       "category": "전통문화",
+      "icon": "🤿",
       "description": "바다에서 숨을 참고 해산물을 채취하는 해녀의 삶과 공동체 문화. 2016년 유네스코 인류무형문화유산에 등재",
       "score": 95,
       "selected": true,
@@ -13,6 +14,7 @@
     {
       "name": "해녀 불턱",
       "category": "전통문화",
+      "icon": "🔥",
       "description": "물질 전후 해녀들이 불을 피우고 옷을 갈아입으며 정보를 나누던 돌담 쉼터",
       "score": 70,
       "selected": false,
@@ -21,6 +23,7 @@
     {
       "name": "해녀 노래",
       "category": "전통문화",
+      "icon": "🎶",
       "description": "물질하러 오가거나 노를 저을 때 부르던 제주의 노동요",
       "score": 65,
       "selected": false,
@@ -29,6 +32,7 @@
     {
       "name": "제주 돌담(밭담)",
       "category": "전통문화",
+      "icon": "🧱",
       "description": "현무암을 쌓아 만든 밭의 경계 담으로, 바람과 소·말로부터 밭을 지키는 제주 농경 문화의 상징",
       "score": 80,
       "selected": true,
@@ -37,6 +41,7 @@
     {
       "name": "제주 초가",
       "category": "전통문화",
+      "icon": "🛖",
       "description": "억새로 지붕을 엮고 줄로 촘촘히 묶어 바람을 견디게 지은 전통 가옥",
       "score": 70,
       "selected": false,
@@ -45,6 +50,7 @@
     {
       "name": "정낭",
       "category": "전통문화",
+      "icon": "🚪",
       "description": "대문 대신 걸쳐 두어 집 주인의 외출 여부를 알리던 나무 막대",
       "score": 75,
       "selected": true,
@@ -53,6 +59,7 @@
     {
       "name": "제주어",
       "category": "전통문화",
+      "icon": "🗣️",
       "description": "육지 말과 크게 다른 제주 고유의 말로, 유네스코가 소멸 위기 언어로 분류",
       "score": 85,
       "selected": true,
@@ -61,6 +68,7 @@
     {
       "name": "갈옷",
       "category": "전통문화",
+      "icon": "👘",
       "description": "덜 익은 감의 즙으로 물들인 제주 전통 노동복",
       "score": 65,
       "selected": false,
@@ -69,6 +77,7 @@
     {
       "name": "허벅",
       "category": "전통문화",
+      "icon": "🏺",
       "description": "여인들이 물을 길어 등에 지고 나르던 제주의 둥근 물동이",
       "score": 60,
       "selected": false,
@@ -77,6 +86,7 @@
     {
       "name": "테우",
       "category": "전통문화",
+      "icon": "🛶",
       "description": "통나무를 엮어 만든 제주 전통 뗏목. 자리돔 잡이와 고기잡이에 쓰임",
       "score": 65,
       "selected": false,
@@ -85,6 +95,7 @@
     {
       "name": "돌하르방",
       "category": "전통문화",
+      "icon": "🗿",
       "description": "제주 성문 앞에 세웠던 현무암 석상으로 제주를 대표하는 상징물",
       "score": 90,
       "selected": true,
@@ -93,6 +104,7 @@
     {
       "name": "방사탑",
       "category": "전통문화",
+      "icon": "🗼",
       "description": "마을의 허한 곳을 막고 액운을 쫓기 위해 돌로 쌓은 탑",
       "score": 60,
       "selected": false,
@@ -101,6 +113,7 @@
     {
       "name": "제주 조랑말 문화",
       "category": "전통문화",
+      "icon": "🐴",
       "description": "고려 시대부터 이어진 제주의 말 사육 문화와 조랑말",
       "score": 70,
       "selected": false,
@@ -109,6 +122,7 @@
     {
       "name": "제주 민요",
       "category": "전통문화",
+      "icon": "🎤",
       "description": "맷돌 노래, 방아 노래 등 노동과 일상 속에서 전해지는 제주의 노래",
       "score": 55,
       "selected": false,
@@ -117,6 +131,7 @@
     {
       "name": "고소리술",
       "category": "전통문화",
+      "icon": "🍶",
       "description": "좁쌀 등으로 빚어 고소리(증류기)로 내리는 제주 전통 증류주",
       "score": 60,
       "selected": false,
@@ -125,6 +140,7 @@
     {
       "name": "칠머리당 영등굿",
       "category": "민속신앙",
+      "icon": "🥁",
       "description": "건입동 해녀와 어부가 바다의 풍요와 안전을 비는 굿. 2009년 유네스코 인류무형문화유산 등재",
       "score": 85,
       "selected": true,
@@ -133,6 +149,7 @@
     {
       "name": "제주 큰굿",
       "category": "민속신앙",
+      "icon": "🪘",
       "description": "제주 무속의 대표 의례로 여러 날에 걸쳐 본풀이를 노래하며 진행",
       "score": 65,
       "selected": false,
@@ -141,6 +158,7 @@
     {
       "name": "송당 본향당",
       "category": "민속신앙",
+      "icon": "⛩️",
       "description": "제주 당신(堂神) 신앙의 근원지로 알려진 구좌읍 송당리의 당",
       "score": 70,
       "selected": false,
@@ -149,6 +167,7 @@
     {
       "name": "신구간",
       "category": "민속신앙",
+      "icon": "📦",
       "description": "대한 후 5일부터 입춘 전 3일까지, 신들이 하늘로 올라가 이사해도 탈이 없다고 믿는 시기",
       "score": 75,
       "selected": true,
@@ -157,6 +176,7 @@
     {
       "name": "일만팔천 신",
       "category": "민속신앙",
+      "icon": "✨",
       "description": "제주 신앙에서 섬 곳곳에 깃들어 있다고 믿는 1만 8천 신들",
       "score": 60,
       "selected": false,
@@ -165,6 +185,7 @@
     {
       "name": "본향당",
       "category": "민속신앙",
+      "icon": "🕯️",
       "description": "마을 사람들을 수호하는 당신을 모시는 제주 마을 신당",
       "score": 55,
       "selected": false,
@@ -173,6 +194,7 @@
     {
       "name": "설문대할망 설화",
       "category": "설화",
+      "icon": "⛰️",
       "description": "치마폭의 흙으로 한라산과 오름을 만들었다는 제주 창조 여신 이야기",
       "score": 95,
       "selected": true,
@@ -181,6 +203,7 @@
     {
       "name": "오백장군 전설",
       "category": "설화",
+      "icon": "🪨",
       "description": "설문대할망의 오백 아들이 한라산 영실의 기암이 되었다는 전설",
       "score": 85,
       "selected": true,
@@ -189,6 +212,7 @@
     {
       "name": "삼성혈 신화",
       "category": "설화",
+      "icon": "🌱",
       "description": "고·양·부 세 신인이 땅에서 솟아 탐라를 열었다는 건국 신화",
       "score": 80,
       "selected": true,
@@ -197,6 +221,7 @@
     {
       "name": "자청비 세경본풀이",
       "category": "설화",
+      "icon": "🌾",
       "description": "농경의 여신 자청비가 곡식의 씨앗을 가져온 이야기",
       "score": 65,
       "selected": false,
@@ -205,6 +230,7 @@
     {
       "name": "삼공본풀이(가믄장아기)",
       "category": "설화",
+      "icon": "👸",
       "description": "자신의 복으로 살아간다고 말한 가믄장아기 이야기",
       "score": 55,
       "selected": false,
@@ -213,6 +239,7 @@
     {
       "name": "차사본풀이(강림도령)",
       "category": "설화",
+      "icon": "💀",
       "description": "저승차사 강림도령이 염라대왕을 잡아온다는 이야기",
       "score": 50,
       "selected": false,
@@ -221,6 +248,7 @@
     {
       "name": "초공본풀이",
       "category": "설화",
+      "icon": "📜",
       "description": "무당의 조상신인 삼형제 이야기",
       "score": 45,
       "selected": false,
@@ -229,6 +257,7 @@
     {
       "name": "김통정 장군 전설",
       "category": "설화",
+      "icon": "⚔️",
       "description": "삼별초 김통정이 항파두리에서 몽골에 맞섰다는 전설",
       "score": 60,
       "selected": false,
@@ -237,6 +266,7 @@
     {
       "name": "산방산 전설",
       "category": "설화",
+      "icon": "🏹",
       "description": "사냥꾼의 화살에 맞은 한라산 꼭대기가 날아와 산방산이 되었다는 전설",
       "score": 70,
       "selected": false,
@@ -245,6 +275,7 @@
     {
       "name": "고종달 전설",
       "category": "설화",
+      "icon": "🐉",
       "description": "중국의 풍수가가 제주의 혈맥을 끊었다는 전설",
       "score": 50,
       "selected": false,
@@ -253,6 +284,7 @@
     {
       "name": "영실 오백나한 이야기",
       "category": "설화",
+      "icon": "🧘",
       "description": "오백 나한이 불법을 닦던 곳이라는 영실 기암의 전설",
       "score": 45,
       "selected": false,
@@ -261,6 +293,7 @@
     {
       "name": "삼성혈",
       "category": "역사유적",
+      "icon": "🕳️",
       "description": "탐라 시조 고·양·부 삼신인이 솟아났다는 구멍 세 개가 있는 사적",
       "score": 85,
       "selected": true,
@@ -269,6 +302,7 @@
     {
       "name": "제주 목관아",
       "category": "역사유적",
+      "icon": "🏯",
       "description": "조선 시대 제주목의 관아 터. 제주 행정의 중심지",
       "score": 80,
       "selected": true,
@@ -277,6 +311,7 @@
     {
       "name": "관덕정",
       "category": "역사유적",
+      "icon": "🏛️",
       "description": "1448년 세워진 제주 목관아의 정자로 제주에서 가장 오래된 건물 중 하나",
       "score": 80,
       "selected": true,
@@ -285,6 +320,7 @@
     {
       "name": "항파두리 항몽 유적",
       "category": "역사유적",
+      "icon": "🛡️",
       "description": "삼별초가 몽골군에 맞서 싸운 토성 유적",
       "score": 75,
       "selected": true,
@@ -293,6 +329,7 @@
     {
       "name": "성읍민속마을",
       "category": "역사유적",
+      "icon": "🏘️",
       "description": "조선 시대 정의현의 읍성이 있던 곳으로 전통 가옥이 잘 보존된 마을",
       "score": 80,
       "selected": true,
@@ -301,6 +338,7 @@
     {
       "name": "고산리 유적",
       "category": "역사유적",
+      "icon": "🦴",
       "description": "제주에서 가장 오래된 신석기 시대 유적",
       "score": 50,
       "selected": false,
@@ -309,6 +347,7 @@
     {
       "name": "삼양동 선사 유적",
       "category": "역사유적",
+      "icon": "🏚️",
       "description": "청동기 시대 대규모 마을 터인 삼양동의 집터 유적",
       "score": 50,
       "selected": false,
@@ -317,6 +356,7 @@
     {
       "name": "화북진성",
       "category": "역사유적",
+      "icon": "🧗",
       "description": "조선 시대 제주의 관문 역할을 한 화북포구의 성곽",
       "score": 55,
       "selected": false,
@@ -325,6 +365,7 @@
     {
       "name": "연북정",
       "category": "역사유적",
+      "icon": "🧭",
       "description": "임금이 계신 북쪽을 그리워한다는 뜻으로 지은 조천진의 정자",
       "score": 60,
       "selected": false,
@@ -333,6 +374,7 @@
     {
       "name": "환해장성",
       "category": "역사유적",
+      "icon": "🌊",
       "description": "고려 시대부터 왜구를 막기 위해 해안을 따라 쌓은 돌성",
       "score": 60,
       "selected": false,
@@ -341,6 +383,7 @@
     {
       "name": "제주향교",
       "category": "역사유적",
+      "icon": "📚",
       "description": "조선 시대 제주목에 세워진 교육 기관",
       "score": 50,
       "selected": false,
@@ -349,6 +392,7 @@
     {
       "name": "오현단",
       "category": "역사유적",
+      "icon": "🙏",
       "description": "제주로 유배 왔거나 제주 교육에 공이 있는 다섯 분을 기리는 제단",
       "score": 45,
       "selected": false,
@@ -357,6 +401,7 @@
     {
       "name": "추사 유배지",
       "category": "역사유적",
+      "icon": "🖌️",
       "description": "서예가 김정희가 대정에서 9년간 유배 생활을 한 곳",
       "score": 75,
       "selected": true,
@@ -365,6 +410,7 @@
     {
       "name": "김만덕 기념관",
       "category": "박물관·기념관",
+      "icon": "💰",
       "description": "기근에 재산을 풀어 백성을 구한 거상 김만덕을 기리는 기념관",
       "score": 65,
       "selected": false,
@@ -373,6 +419,7 @@
     {
       "name": "국립제주박물관",
       "category": "박물관·기념관",
+      "icon": "🏺",
       "description": "제주의 역사와 문화를 선사부터 근대까지 전시하는 국립박물관",
       "score": 75,
       "selected": true,
@@ -381,6 +428,7 @@
     {
       "name": "제주민속자연사박물관",
       "category": "박물관·기념관",
+      "icon": "🦋",
       "description": "제주의 민속과 자연사를 함께 전시하는 박물관",
       "score": 60,
       "selected": false,
@@ -389,6 +437,7 @@
     {
       "name": "제주해녀박물관",
       "category": "박물관·기념관",
+      "icon": "🐚",
       "description": "해녀의 삶과 물질 도구, 문화를 소개하는 구좌읍 박물관",
       "score": 80,
       "selected": true,
@@ -397,6 +446,7 @@
     {
       "name": "제주돌문화공원",
       "category": "박물관·기념관",
+      "icon": "🪨",
       "description": "설문대할망 신화를 바탕으로 제주 돌 문화를 전시한 공원",
       "score": 70,
       "selected": false,
@@ -405,6 +455,7 @@
     {
       "name": "제주 4·3 평화기념관",
       "category": "박물관·기념관",
+      "icon": "🕊️",
       "description": "제주 4·3 사건의 역사를 전시하는 기념관",
       "score": 90,
       "selected": true,
@@ -413,6 +464,7 @@
     {
       "name": "제주 4·3 평화공원",
       "category": "근현대사",
+      "icon": "🌹",
       "description": "4·3 희생자를 추모하는 공원. 위령제단과 위패 봉안실이 있음",
       "score": 90,
       "selected": true,
@@ -421,6 +473,7 @@
     {
       "name": "너븐숭이 4·3기념관",
       "category": "근현대사",
+      "icon": "🕯️",
       "description": "북촌리 학살 사건을 기억하는 기념관과 애기무덤 터",
       "score": 75,
       "selected": false,
@@ -429,6 +482,7 @@
     {
       "name": "알뜨르 비행장",
       "category": "근현대사",
+      "icon": "✈️",
       "description": "일제강점기 일본군이 건설한 비행장 터와 격납고가 남아 있는 곳",
       "score": 70,
       "selected": false,
@@ -437,6 +491,7 @@
     {
       "name": "송악산 일제 동굴진지",
       "category": "근현대사",
+      "icon": "🕳️",
       "description": "태평양전쟁 말기 일본군이 해안 절벽에 판 동굴 진지",
       "score": 65,
       "selected": false,
@@ -445,6 +500,7 @@
     {
       "name": "제주항일기념관",
       "category": "박물관·기념관",
+      "icon": "🇰🇷",
       "description": "제주도민의 항일 독립운동 역사를 전시한 기념관",
       "score": 50,
       "selected": false,
@@ -453,6 +509,7 @@
     {
       "name": "하멜 표류",
       "category": "근현대사",
+      "icon": "⛵",
       "description": "1653년 네덜란드인 하멜 일행이 제주에 표착한 사건. 하멜상선전시관이 있음",
       "score": 55,
       "selected": false,
@@ -461,6 +518,7 @@
     {
       "name": "제주 화산섬과 용암동굴",
       "category": "유네스코 유산",
+      "icon": "🌋",
       "description": "한라산, 성산일출봉, 거문오름 용암동굴계로 2007년 유네스코 세계자연유산 등재",
       "score": 90,
       "selected": true,
@@ -469,6 +527,7 @@
     {
       "name": "제주 밭담 농업시스템",
       "category": "유네스코 유산",
+      "icon": "🥔",
       "description": "제주의 돌담 밭 농업은 2013년 FAO 세계중요농업유산으로 지정",
       "score": 65,
       "selected": false,
@@ -477,6 +536,7 @@
     {
       "name": "제주 해녀어업",
       "category": "유네스코 유산",
+      "icon": "🦪",
       "description": "전통 방식의 해녀 물질 어업. 2023년 세계중요농업유산으로 지정",
       "score": 60,
       "selected": false,
