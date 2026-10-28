@@ -41,13 +41,16 @@ async function callGemini(contents, deadline) {
     });
 
   let res;
+  const started = Date.now();
   try {
     res = await request();
     for (const delay of RETRY_DELAYS_MS) {
       if ((res.status !== 503 && res.status !== 429) || Date.now() + delay > deadline) break;
+      console.log(`Gemini ${res.status} → ${delay}ms 후 재시도`);
       await sleep(delay);
       res = await request();
     }
+    console.log(`Gemini ${MODEL} 응답 ${res.status} (${Date.now() - started}ms)`);
   } catch (e) {
     if (e.name === "TimeoutError" || e.name === "AbortError") {
       throw new Error("Gemini 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요.");
